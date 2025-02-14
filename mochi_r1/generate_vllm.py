@@ -33,7 +33,7 @@ def build_distilabel_pipeline(
     client_replicas: int = 1,
     timeout: int = 900,
     retries: int = 0,
-    cuda_devices: str = "0",
+    cuda_devices: str = "1",
     tensor_parallel_size: int = 1,
     max_model_len: int = 8192
 ) -> Pipeline:
@@ -52,13 +52,11 @@ def build_distilabel_pipeline(
                     "top_p": top_p,
                     "max_new_tokens": max_new_tokens,
                 },
-            )
+            ),
             template = prompt_template,
             input_mappings = {"instruction": prompt_column} if prompt_column is not None else {},
             input_batch_size = input_batch_size,
-            num_generations = num_generations,
-            group_generations = True,
-            resources = StepResources(replicas = client_replicas),
+            num_generations = num_generations
         )
 
     return pipeline
@@ -256,7 +254,7 @@ if __name__ == "__main__":
         --max-model-len 8192 \
         --num-generations 2 \
         --input-batch-size 64 \
-        --cuda-devices "1" \
-        --tensor-parallel-size 1 \
+        --cuda-devices "1,2,3" \
+        --tensor-parallel-size 4 \
         --hf-save-dir "/home/jovyan/liumochi/open-r1/data_distilled"
     '''
