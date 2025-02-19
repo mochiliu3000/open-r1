@@ -1,5 +1,5 @@
 # Model arguments
-model_name_or_path: Qwen/Qwen2.5-1.5B-Instruct
+model_name_or_path: /home/jovyan/liumochi/model/Qwen/Qwen2.5-1.5B-Instruct
 model_revision: main
 torch_dtype: bfloat16
 attn_implementation: flash_attention_2
@@ -30,11 +30,11 @@ packing: true
 max_seq_length: 4096
 max_steps: -1
 num_train_epochs: 1
-output_dir: data/Qwen2.5-1.5B-Open-R1-Distill
+output_dir: /home/jovyan/liumochi/open-r1/data_out/Qwen2.5-1.5B-Open-R1-Distill
 overwrite_output_dir: true
 per_device_eval_batch_size: 4
 per_device_train_batch_size: 2
-push_to_hub: true
+push_to_hub: false
 report_to:
 - wandb
 save_strategy: "no"
