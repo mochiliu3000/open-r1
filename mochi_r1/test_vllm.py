@@ -9,8 +9,8 @@ You will be given a problem. Please reason step by step, and put your final answ
 {{ instruction }}"""
 
 data_files = {
-    "train": "/home/jovyan/liumochi/open-r1/data/AI-MO/NuminaMath-TIR/data/train-00000-of-00001.parquet",
-    "test": "/home/jovyan/liumochi/open-r1/data/AI-MO/NuminaMath-TIR/data/test-00000-of-00001.parquet"
+    "train": "/home/jovyan/liumochi/data/AI-MO/NuminaMath-TIR/data/train-00000-of-00001.parquet",
+    "test": "/home/jovyan/liumochi/data/AI-MO/NuminaMath-TIR/data/test-00000-of-00001.parquet"
 }
 dataset = load_dataset("parquet", data_files=data_files)
 train_dataset = dataset["train"].select(range(2))
