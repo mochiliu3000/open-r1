@@ -100,7 +100,9 @@ def main(script_args, training_args, model_args):
     ################
     # Load datasets
     ################
-    dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
+    #dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
+    train_dataset = load_from_disk(script_args.dataset_name)
+    test_dataset = load_from_disk(script_args.dataset_name.replace('train_dataset','test_dataset'))
 
     ################
     # Load tokenizer

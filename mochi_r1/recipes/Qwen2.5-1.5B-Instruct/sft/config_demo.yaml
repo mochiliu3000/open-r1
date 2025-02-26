@@ -5,7 +5,7 @@ torch_dtype: bfloat16
 attn_implementation: flash_attention_2
 
 # Data training arguments
-dataset_name: HuggingFaceH4/Bespoke-Stratos-17k
+dataset_name: /home/jovyan/liumochi/data/open_thoughts_processed/train_dataset
 dataset_configs:
 - all
 preprocessing_num_workers: 8
