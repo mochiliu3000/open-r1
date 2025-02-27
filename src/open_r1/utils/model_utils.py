@@ -22,5 +22,7 @@ def get_tokenizer(
         tokenizer.chat_template = training_args.chat_template
     elif auto_set_chat_template and tokenizer.get_chat_template() is None:
         tokenizer.chat_template = DEFAULT_CHAT_TEMPLATE
-
+    print('----------tokenizer template----------')
+    print(tokenizer.chat_template)
+    print('----------tokenizer template----------')
     return tokenizer
