@@ -1,13 +1,15 @@
-from transformers import AutoTokenizer, PreTrainedTokenizer
+from transformers import AutoTokenizer
+import json
 
-from trl import ModelConfig
 
-from ..configs import GRPOConfig, SFTConfig
+model_name = "/home/jovyan/liumochi/model/Qwen/Qwen2.5-7B-Instruct"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+messages = [
+    {"role": "system", "content": "你是一个法律助手，需专业回答法律问题。"},
+    {"role": "user", "content": "合同违约的赔偿标准是什么？"}
+]
 
-# NOTE: AI-MO/NuminaMath-TIR 'messages' column has the following format. Need to use the chat_template to format the data. This chat_template can be attached to the tokenizer
-""" 
-# https://huggingface.co/datasets/AI-MO/NuminaMath-TIR/viewer/default/train?row=0
-[
+ai_mo_messages = [
     {
         "content": "What is the coefficient of $x^2y^6$ in the expansion of $\\left(\\frac{3}{5}x-\\frac{y}{2}\\right)^8$? Express your answer as a common fraction.",
         "role": "user"
@@ -17,29 +19,71 @@ from ..configs import GRPOConfig, SFTConfig
         "role": "assistant"
     }
 ]
-"""
 
-# NOTE: The chat_template is in Jinjia template format, which use {{ }} to denote the variables, {% for %} to iterate over the list, {% if %} to check the condition, {% endif %} to end the condition, {% endfor %} to end the loop.
+# 应用模板并添加生成提示
+formatted_input = tokenizer.apply_chat_template(
+    messages, 
+    tokenize=False,
+    add_generation_prompt=True
+)
+
+ai_mo_formatted_input = tokenizer.apply_chat_template(
+    ai_mo_messages, 
+    tokenize=False,
+    add_generation_prompt=True
+)
+
+print('messages:')
+print(json.dumps(messages, indent=4, ensure_ascii=False))
+print('-' * 100)
+print(f'{tokenizer.name_or_path.split("/")[-1]} chat template:')
+print(tokenizer.chat_template)
+print('-' * 100)
+print(f'{tokenizer.name_or_path.split("/")[-1]} template formatted output:')
+print(formatted_input)
+print('-' * 100)
+""" Qwen template format
+<|im_start|>system
+你是一个法律助手，需专业回答法律问题。<|im_end|>
+<|im_start|>user
+合同违约的赔偿标准是什么？<|im_end|>
+<|im_start|>assistant
+"""
+print('formatted ai_mo_messages:')
+print(ai_mo_formatted_input)
+print('=' * 100)
+
+###################################################################################
+
 DEFAULT_CHAT_TEMPLATE = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
 
+tokenizer.chat_template = DEFAULT_CHAT_TEMPLATE 
 
-def get_tokenizer(
-    model_args: ModelConfig, training_args: SFTConfig | GRPOConfig, auto_set_chat_template: bool = True
-) -> PreTrainedTokenizer:
-    """Get the tokenizer for the model."""
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_args.model_name_or_path,
-        revision=model_args.model_revision,
-        trust_remote_code=model_args.trust_remote_code,
-    )
-    # If user provides a chat_template, use it
-    if training_args.chat_template is not None:
-        tokenizer.chat_template = training_args.chat_template
-    # If user does not provide a chat_template, and the model does not have a default chat_template, use the Given DEFAULT_CHAT_TEMPLATE
-    elif auto_set_chat_template and tokenizer.get_chat_template() is None:
-        tokenizer.chat_template = DEFAULT_CHAT_TEMPLATE
-    # Otherwise, use the model's built-in chat_template
-    print('----------tokenizer template----------')
-    print(tokenizer.chat_template)
-    print('----------tokenizer template----------')
-    return tokenizer
+custom_formatted_input = tokenizer.apply_chat_template(
+    messages, 
+    tokenize=False,
+    add_generation_prompt=True
+)
+
+ai_mo_formatted_input = tokenizer.apply_chat_template(
+    ai_mo_messages, 
+    tokenize=False,
+    add_generation_prompt=True
+)
+
+print('custom chat template:')
+print(tokenizer.chat_template)
+print('-' * 100)
+print('custom template formatted output:')
+print(custom_formatted_input)
+print('-' * 100)
+""" custom template format
+<|system|>
+你是一个法律助手，需专业回答法律问题。<|im_end|>
+<|user|>
+合同违约的赔偿标准是什么？<|im_end|>
+<|assistant|>
+"""
+print('custom ai_mo template formatted output:')
+print(ai_mo_formatted_input)
+print('-' * 100)

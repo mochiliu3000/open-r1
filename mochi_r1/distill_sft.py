@@ -54,11 +54,11 @@ def load_open_thoughts_data(processed_dir, base_dir):
         print(f"INFO - Load processed dataset from {processed_dir}")
         return train_dataset, test_dataset
     else:
-        # 2.Load data
+        # Load data
         data_dir = f'{base_dir}/data/open-thoughts/OpenThoughts-114k/metadata/*'
         dataset = load_dataset("parquet", data_files=data_dir)
 
-        # 3.Preprocess data
+        # Preprocess data
         # According to question domain, split the data into different domain and train/test datasets
         sample_config = {
             'math': [3000, 600], # [train, test]
