@@ -33,6 +33,12 @@ accelerate launch --config_file=recipes/accelerate_configs/zero3.yaml src/open_r
     --eval_strategy steps \
     --eval_steps 100 \
     --output_dir data/Qwen2.5-1.5B-Open-R1-Distill
+
+
+ACCELERATE_LOG_LEVEL=info accelerate launch \
+  --config_file mochi_r1/zero3.yaml \
+  src/open_r1/sft.py \
+  --config mochi_r1/recipes/Qwen2.5-1.5B-Instruct/sft/config_demo.yaml
 """
 
 import logging
@@ -155,7 +161,7 @@ def main(script_args, training_args, model_args):
         checkpoint = last_checkpoint
     train_result = trainer.train(resume_from_checkpoint=checkpoint)
     metrics = train_result.metrics
-    metrics["train_samples"] = len(dataset[script_args.dataset_train_split])
+    metrics["train_samples"] = len(train_dataset)
     trainer.log_metrics("train", metrics)
     trainer.save_metrics("train", metrics)
     trainer.save_state()
@@ -184,7 +190,7 @@ def main(script_args, training_args, model_args):
     if training_args.do_eval:
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate()
-        metrics["eval_samples"] = len(dataset[script_args.dataset_test_split])
+        metrics["eval_samples"] = len(test_dataset)
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
 

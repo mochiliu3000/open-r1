@@ -25,6 +25,7 @@ accelerate launch --config_file=zero3.yaml distill_sft.py
 
 '''
 import os
+import json
 from functools import partial
 import wandb
 import torch
@@ -53,33 +54,33 @@ def load_open_thoughts_data(processed_dir, base_dir):
         print(f"INFO - Load processed dataset from {processed_dir}")
         return train_dataset, test_dataset
     else:
-        # 2.Load data
+        # Load data
         data_dir = f'{base_dir}/data/open-thoughts/OpenThoughts-114k/metadata/*'
         dataset = load_dataset("parquet", data_files=data_dir)
 
-        # 3.Preprocess data
+        # Preprocess data
         # According to question domain, split the data into different domain and train/test datasets
-        # sample_config = {
-        #     'math': [3000, 600], # [train, test]
-        #     'code': [3000, 600],
-        #     'science': {
-        #         'biology': [1000, 200],
-        #         'physics': [1000, 200],
-        #         'chemistry': [1000, 200]
-        #     },
-        #     'puzzle': [1000, 200]
-        # }
-        
         sample_config = {
-            'math': [30, 6], # [train, test]
-            'code': [30, 6],
+            'math': [3000, 600], # [train, test]
+            'code': [3000, 600],
             'science': {
-                'biology': [10, 2],
-                'physics': [10, 2],
-                'chemistry': [10, 2]
+                'biology': [1000, 200],
+                'physics': [1000, 200],
+                'chemistry': [1000, 200]
             },
-            'puzzle': [10, 2]
+            'puzzle': [1000, 200]
         }
+        
+        # sample_config = {
+        #     'math': [30, 6], # [train, test]
+        #     'code': [30, 6],
+        #     'science': {
+        #         'biology': [10, 2],
+        #         'physics': [10, 2],
+        #         'chemistry': [10, 2]
+        #     },
+        #     'puzzle': [10, 2]
+        # }
 
         train_data = list()
         test_data = list()
@@ -112,23 +113,48 @@ def load_open_thoughts_data(processed_dir, base_dir):
 
 
 # Format the data with prompt template
-def formatting_prompt_template(examples, eos_token):
-    prompt_template = """A conversation between User and Assistant. The user asks a question, and the Assistant solves it.
-    The assistant first thinks about the reasoning process in the mind and then provides the user
-    with the answer. The reasoning process and answer are enclosed within <think> </think> and
-    <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think>
-    <answer> answer here </answer>.\n## User: {}.\n## Assistant: {}"""
+def formatting_prompt_template(examples):
+    '''
+    # NOTE: Format the data in the following style before utilzing the chat_template
+    [
+        {
+            "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in the mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think><answer> answer here </answer>.",
+            "role": "system"
+        },
+        {
+            "content": "[Problem]",
+            "role": "user"
+        },
+        {
+            "content": "<think>[Deepseek Reasoning]</think>\n<answer>[Deepseek Solution]</answer>",
+            "role": "assistant"
+        }
+    ]
+    '''
 
     problems = examples["problem"]
     cots = examples["deepseek_reasoning"]
     outputs = examples["deepseek_solution"]
-    texts = []
+    messages = []
     for problem, cot, output in zip(problems, cots, outputs):
-        assistant_answer = "<think>" + cot + "</think>\n<answer>" + output + "</answer>"
-        text = prompt_template.format(problem, assistant_answer) + eos_token    
-        texts.append(text)
+        prompt_formatted = [
+            {
+                "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in the mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think></think> and <answer></answer> tags, respectively, i.e., <think>reasoning process here</think>\n<answer>answer here</answer>.",
+                "role": "system"
+            },
+            {
+                "content": problem,
+                "role": "user"
+            },
+            {
+                "content": f"\n<think>{cot}</think>\n<answer>{output}</answer>",
+                "role": "assistant"
+            }
+        ]
+
+        messages.append(prompt_formatted)
     return {
-        "text": texts
+        "messages": messages
     }
 
 
@@ -176,7 +202,7 @@ def setup_sft_trainer(model_name_or_path, formatted_train_dataset, formatted_tes
 if __name__ == "__main__":
     # 1.Initialize wandb
     wandb_key="e6e4d84f1ccdd4ae465070c962c94c8b24d29703"
-    init_wandb(wandb_key)
+    #init_wandb(wandb_key)
 
     # 2.Load open thoughts data
     base_dir = '/home/jovyan/liumochi' # '/cuai/LMC' 
@@ -190,10 +216,17 @@ if __name__ == "__main__":
     tokenizer.pad_token = tokenizer.eos_token
 
     # 4.Format data with prompt template
-    formatted_train_dataset = train_dataset.map(partial(formatting_prompt_template, eos_token=EOS_TOKEN), batched=True)
-    formatted_test_dataset = test_dataset.map(partial(formatting_prompt_template, eos_token=EOS_TOKEN), batched=True)
+    formatted_train_dataset = train_dataset.map(
+        formatting_prompt_template, 
+        batched=True).select_columns(["messages"])
+    formatted_test_dataset = test_dataset.map(
+        formatting_prompt_template,
+        batched=True).select_columns(["messages"])
+    formatted_train_dataset.save_to_disk(f'{processed_dir}/formatted_train_dataset')
+    formatted_test_dataset.save_to_disk(f'{processed_dir}/formatted_test_dataset')
     # print(formatted_train_dataset["text"][0])
 
+    """
     # 5.Setup SFT trainer
     print(f'>>>>>>>Device Cuda:{torch.cuda.current_device()} used GPU memory:{torch.cuda.memory_allocated() // 1048576} MB')
     trainer = setup_sft_trainer(model_name_or_path, formatted_train_dataset, formatted_test_dataset)
@@ -223,3 +256,4 @@ if __name__ == "__main__":
     test_metrics = trainer.evaluate()
     trainer.log_metrics("eval", test_metrics)
     trainer.save_metrics("eval", test_metrics)
+    """
