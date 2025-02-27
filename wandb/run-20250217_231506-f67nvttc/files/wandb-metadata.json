@@ -1,0 +1,87 @@
+{
+  "os":  "Linux-5.4.160-3.el7.x86_64-x86_64-with-glibc2.35",
+  "python":  "CPython 3.11.11",
+  "startedAt":  "2025-02-17T23:15:06.348810Z",
+  "args":  [
+    "--config",
+    "mochi_r1/recipes/Qwen2.5-1.5B-Instruct/grpo/config_demo.yaml"
+  ],
+  "program":  "/home/jovyan/liumochi/open-r1/src/open_r1/grpo.py",
+  "codePath":  "src/open_r1/grpo.py",
+  "git":  {
+    "remote":  "git@github.com:mochiliu3000/open-r1.git",
+    "commit":  "48dc63ca21327252484b7515408d6988e5010163"
+  },
+  "root":  "/home/jovyan/liumochi/open-r1",
+  "host":  "nb-big-dz-mxxl-8-0",
+  "executable":  "/home/jovyan/liumochi/open-r1/OPENR1/bin/python3",
+  "codePathLocal":  "src/open_r1/grpo.py",
+  "cpu_count":  48,
+  "cpu_count_logical":  96,
+  "gpu":  "NVIDIA A100 80GB PCIe",
+  "gpu_count":  8,
+  "disk":  {
+    "/":  {
+      "total":  "321965260800",
+      "used":  "117734678528"
+    }
+  },
+  "memory":  {
+    "total":  "607377784832"
+  },
+  "cpu":  {
+    "count":  48,
+    "countLogical":  96
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    },
+    {
+      "name":  "NVIDIA A100 80GB PCIe",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    }
+  ],
+  "cudaVersion":  "12.4"
+}
