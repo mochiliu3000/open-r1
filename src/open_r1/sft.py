@@ -38,7 +38,7 @@ accelerate launch --config_file=recipes/accelerate_configs/zero3.yaml src/open_r
 ACCELERATE_LOG_LEVEL=info accelerate launch \
   --config_file mochi_r1/zero3.yaml \
   src/open_r1/sft.py \
-  --config mochi_r1/recipes/Qwen2.5-1.5B-Instruct/sft/config_demo.yaml
+  --config mochi_r1/recipes/Qwen2.5-1.5B-Instruct/sft/config_demo_all.yaml
 """
 
 import logging
@@ -94,11 +94,14 @@ def main(script_args, training_args, model_args):
     logger.info(f"Training parameters {training_args}")
 
     # Check for last checkpoint
+    logger.info("*** Loading last checkpoint if exists ***")
     last_checkpoint = None
     if os.path.isdir(training_args.output_dir):
+        print(">>>>>>>>>> Found last checkpoint dir")
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
+        print(">>>>>>>>>> last_checkpoint is None:", last_checkpoint is None)
     if last_checkpoint is not None and training_args.resume_from_checkpoint is None:
-        logger.info(f"Checkpoint detected, resuming training at {last_checkpoint=}.")
+        logger.info(f">>>>>>>>>> Checkpoint detected, resuming training at {last_checkpoint}.")
 
     if "wandb" in training_args.report_to:
         init_wandb_training(training_args)

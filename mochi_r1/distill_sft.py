@@ -45,10 +45,10 @@ def init_wandb(key):
 
 
 # Load open thoughts data - load processed data if exists, otherwise load from raw data
-def load_open_thoughts_data(processed_dir, base_dir):
-    if processed_dir and os.path.exists(processed_dir):     
-        train_dataset_dir = f'{processed_dir}/train_dataset'
-        test_dataset_dir = f'{processed_dir}/test_dataset'
+def load_open_thoughts_data(processed_dir, base_dir, sample_type="all"):   
+    train_dataset_dir = f'{processed_dir}/{sample_type}_train_dataset'
+    test_dataset_dir = f'{processed_dir}/{sample_type}_test_dataset'
+    if os.path.exists(train_dataset_dir) and os.path.exists(test_dataset_dir): 
         train_dataset = load_from_disk(train_dataset_dir)
         test_dataset = load_from_disk(test_dataset_dir)
         print(f"INFO - Load processed dataset from {processed_dir}")
@@ -71,20 +71,36 @@ def load_open_thoughts_data(processed_dir, base_dir):
             'puzzle': [1000, 200]
         }
         
-        # sample_config = {
-        #     'math': [30, 6], # [train, test]
-        #     'code': [30, 6],
-        #     'science': {
-        #         'biology': [10, 2],
-        #         'physics': [10, 2],
-        #         'chemistry': [10, 2]
-        #     },
-        #     'puzzle': [10, 2]
-        # }
+        sample_config_math_code = {
+            'math': [3000, 0], # [train, test]
+            'code': [3000, 0],
+            'science': {
+                'biology': [0, 200],
+                'physics': [0, 200],
+                'chemistry': [0, 200]
+            },
+            'puzzle': [0, 200]
+        }
+        
+        sample_config_puzzle_science = {
+            'math': [0, 600], # [train, test]
+            'code': [0, 600],
+            'science': {
+                'biology': [1000, 0],
+                'physics': [1000, 0],
+                'chemistry': [1000, 0]
+            },
+            'puzzle': [1000, 0]
+        }
 
         train_data = list()
         test_data = list()
 
+        if sample_type == "math_code":
+            sample_config = sample_config_math_code
+        elif sample_type == "puzzle_science":
+            sample_config = sample_config_puzzle_science
+        
         # Iterate over each category and do sampling
         for category, count in sample_config.items():
             if isinstance(count, dict):
@@ -107,8 +123,8 @@ def load_open_thoughts_data(processed_dir, base_dir):
         test_dataset = Dataset.from_list(test_data)
         print(f"INFO - Train dataset created with length: {len(train_dataset)}")
         print(f"INFO - Test dataset created with length: {len(test_dataset)}")
-        train_dataset.save_to_disk(f'{processed_dir}/train_dataset')
-        test_dataset.save_to_disk(f'{processed_dir}/test_dataset')
+        train_dataset.save_to_disk(f'{processed_dir}/{sample_type}_train_dataset')
+        test_dataset.save_to_disk(f'{processed_dir}/{sample_type}_test_dataset')
         return train_dataset, test_dataset
 
 
@@ -207,7 +223,8 @@ if __name__ == "__main__":
     # 2.Load open thoughts data
     base_dir = '/home/jovyan/liumochi' # '/cuai/LMC' 
     processed_dir = f'{base_dir}/data/open_thoughts_processed'
-    train_dataset, test_dataset = load_open_thoughts_data(processed_dir, base_dir)
+    sample_type = 'puzzle_science' # math_code
+    train_dataset, test_dataset = load_open_thoughts_data(processed_dir, base_dir, sample_type)
 
     # 3.Setup model
     model_name_or_path = f"{base_dir}/model/Qwen/Qwen2.5-7B-Instruct"
@@ -222,8 +239,8 @@ if __name__ == "__main__":
     formatted_test_dataset = test_dataset.map(
         formatting_prompt_template,
         batched=True).select_columns(["messages"])
-    formatted_train_dataset.save_to_disk(f'{processed_dir}/formatted_train_dataset')
-    formatted_test_dataset.save_to_disk(f'{processed_dir}/formatted_test_dataset')
+    formatted_train_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_train_dataset')
+    formatted_test_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_test_dataset')
     # print(formatted_train_dataset["text"][0])
 
     """
