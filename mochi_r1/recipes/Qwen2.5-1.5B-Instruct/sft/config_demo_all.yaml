@@ -15,6 +15,7 @@ bf16: true
 do_train: true
 do_save: true
 do_eval: true
+evalset_name: /home/jovyan/liumochi/data/open_thoughts_processed/all_formatted_test_dataset
 eval_strategy: steps
 eval_steps: 20
 gradient_accumulation_steps: 4

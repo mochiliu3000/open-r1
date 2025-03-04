@@ -15,7 +15,7 @@ bf16: true
 do_train: false
 do_save: false
 do_eval: true
-evalset_name: /home/jovyan/liumochi/data/open_thoughts_processed/puzzle_science_formatted_test_dataset
+evalset_name: /home/jovyan/liumochi/data/open_thoughts_processed/math_code_formatted_test_dataset
 eval_strategy: steps
 eval_steps: 20
 gradient_accumulation_steps: 4
