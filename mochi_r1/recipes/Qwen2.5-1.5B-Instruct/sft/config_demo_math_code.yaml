@@ -12,6 +12,8 @@ preprocessing_num_workers: 8
 
 # SFT trainer config
 bf16: true
+do_train: true
+do_save: true
 do_eval: true
 eval_strategy: steps
 eval_steps: 20

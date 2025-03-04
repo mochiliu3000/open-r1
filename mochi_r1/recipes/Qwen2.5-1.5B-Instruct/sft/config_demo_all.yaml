@@ -5,13 +5,15 @@ torch_dtype: bfloat16
 attn_implementation: flash_attention_2
 
 # Data training arguments
-dataset_name: /home/jovyan/liumochi/data/open_thoughts_processed/formatted_train_dataset
+dataset_name: /home/jovyan/liumochi/data/open_thoughts_processed/all_formatted_train_dataset
 dataset_configs:
 - all
 preprocessing_num_workers: 8
 
 # SFT trainer config
 bf16: true
+do_train: true
+do_save: true
 do_eval: true
 eval_strategy: steps
 eval_steps: 20

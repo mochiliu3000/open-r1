@@ -111,7 +111,7 @@ def main(script_args, training_args, model_args):
     ################
     #dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
     train_dataset = load_from_disk(script_args.dataset_name)
-    test_dataset = load_from_disk(script_args.dataset_name.replace('train_dataset','test_dataset'))
+    test_dataset = load_from_disk(training_args.evalset_name)
 
     ################
     # Load tokenizer
@@ -156,36 +156,38 @@ def main(script_args, training_args, model_args):
     ###############
     # Training loop
     ###############
-    logger.info("*** Train ***")
-    checkpoint = None
-    if training_args.resume_from_checkpoint is not None:
-        checkpoint = training_args.resume_from_checkpoint
-    elif last_checkpoint is not None:
-        checkpoint = last_checkpoint
-    train_result = trainer.train(resume_from_checkpoint=checkpoint)
-    metrics = train_result.metrics
-    metrics["train_samples"] = len(train_dataset)
-    trainer.log_metrics("train", metrics)
-    trainer.save_metrics("train", metrics)
-    trainer.save_state()
+    if training_args.do_train:
+        logger.info("*** Train ***")
+        checkpoint = None
+        if training_args.resume_from_checkpoint is not None:
+            checkpoint = training_args.resume_from_checkpoint
+        elif last_checkpoint is not None:
+            checkpoint = last_checkpoint
+        train_result = trainer.train(resume_from_checkpoint=checkpoint)
+        metrics = train_result.metrics
+        metrics["train_samples"] = len(train_dataset)
+        trainer.log_metrics("train", metrics)
+        trainer.save_metrics("train", metrics)
+        trainer.save_state()
 
     ##################################
     # Save model and create model card
     ##################################
-    logger.info("*** Save model ***")
-    trainer.save_model(training_args.output_dir)
-    logger.info(f"Model saved to {training_args.output_dir}")
+    if training_args.do_save:
+        logger.info("*** Save model ***")
+        trainer.save_model(training_args.output_dir)
+        logger.info(f"Model saved to {training_args.output_dir}")
 
-    # Save everything else on main process
-    kwargs = {
-        "dataset_name": script_args.dataset_name,
-        "tags": ["open-r1"],
-    }
-    if trainer.accelerator.is_main_process:
-        trainer.create_model_card(**kwargs)
-        # Restore k,v cache for fast inference
-        trainer.model.config.use_cache = True
-        trainer.model.config.save_pretrained(training_args.output_dir)
+        # Save everything else on main process
+        kwargs = {
+            "dataset_name": script_args.dataset_name,
+            "tags": ["open-r1"],
+        }
+        if trainer.accelerator.is_main_process:
+            trainer.create_model_card(**kwargs)
+            # Restore k,v cache for fast inference
+            trainer.model.config.use_cache = True
+            trainer.model.config.save_pretrained(training_args.output_dir)
 
     ##########
     # Evaluate

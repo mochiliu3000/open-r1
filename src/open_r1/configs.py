@@ -83,3 +83,9 @@ class SFTConfig(trl.SFTConfig):
         default=None,
         metadata={"help": ("The project to store runs under.")},
     )
+    do_train: bool = field(default=True, metadata={"help": "Whether to train the model."})
+    do_save: bool = field(default=True, metadata={"help": "Whether to save the model."})
+    evalset_name: str = field(
+        default=None,
+        metadata={"help": ("The eval set path")},
+    )

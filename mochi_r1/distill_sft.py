@@ -223,7 +223,7 @@ if __name__ == "__main__":
     # 2.Load open thoughts data
     base_dir = '/home/jovyan/liumochi' # '/cuai/LMC' 
     processed_dir = f'{base_dir}/data/open_thoughts_processed'
-    sample_type = 'puzzle_science' # math_code
+    sample_type = 'all' #'puzzle_science' # math_code
     train_dataset, test_dataset = load_open_thoughts_data(processed_dir, base_dir, sample_type)
 
     # 3.Setup model
