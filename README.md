@@ -5,6 +5,9 @@ source OPENR1/bin/activate
 
 # Login wandb
 wandb login
+
+# Check GPU usage
+watch 'nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits'
 ```
 
 ## GRPO training
@@ -47,12 +50,23 @@ python mochi_r1/generate_vllm.py \
 
 ## Evaluation
 ```
-MODEL=/home/jovyan/liumochi/open-r1/data_out/Qwen2.5-1.5B-Open-R1-GRPO
-MODEL_ARGS="pretrained=$MODEL,dtype=bfloat16,max_model_length=32768,gpu_memory_utilisation=0.8"
-OUTPUT_DIR=/home/jovyan/liumochi/open-r1/evals/$MODEL
+# https://github.com/huggingface/lighteval/blob/main/src/lighteval/models/vllm/vllm_model.py
 
-# MATH-500
-TASK=math_500
+# MODEL_NAME=Qwen2.5-7B-Open-R1-Distill
+# MODEL_NAME=Distill-Qwen2.5-7B-Math-Code
+# MODEL_NAME=Distill-Qwen2.5-7B-Puzzle-Science
+# MODEL=/home/jovyan/liumochi/open-r1/data_out/$MODEL_NAME
+
+MODEL_NAME=DeepSeek-R1-Distill-Qwen-7B
+MODEL=/home/jovyan/liumochi/model/deepseek-ai/$MODEL_NAME
+
+MODEL_NAME=Qwen2.5-7B-Instruct
+MODEL=/home/jovyan/liumochi/model/Qwen/$MODEL_NAME
+
+MODEL_ARGS="pretrained=$MODEL,dtype=bfloat16,max_model_length=32768,gpu_memory_utilisation=0.9"
+OUTPUT_DIR=/home/jovyan/liumochi/open-r1/evals/$MODEL_NAME
+# TASK=math_500
+TASK=gpqa:diamond
 lighteval vllm $MODEL_ARGS "custom|$TASK|0|0" \
   --custom-tasks mochi_r1/evaluate.py \
   --use-chat-template \
