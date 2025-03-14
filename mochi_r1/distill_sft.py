@@ -128,13 +128,13 @@ def load_open_thoughts_data(processed_dir, base_dir, sample_type="all"):
         return train_dataset, test_dataset
 
 
-# Format the data with prompt template
-def formatting_prompt_template(examples):
+# Format the data with prompt template - pre-CoT
+def formatting_prompt_template_pre_CoT(examples):
     '''
     # NOTE: Format the data in the following style before utilzing the chat_template
     [
         {
-            "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in the mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think><answer> answer here </answer>.",
+            "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in the mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think>\n<answer> answer here </answer>. The last line within <answer></answer> should be in the following format: 'Therefore, the final answer is: $\\boxed{{ANSWER}}$.'",
             "role": "system"
         },
         {
@@ -155,7 +155,7 @@ def formatting_prompt_template(examples):
     for problem, cot, output in zip(problems, cots, outputs):
         prompt_formatted = [
             {
-                "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in the mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think></think> and <answer></answer> tags, respectively, i.e., <think>reasoning process here</think>\n<answer>answer here</answer>.",
+                "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think></think> and <answer></answer> tags, respectively, i.e., <think>reasoning process here</think>\n<answer>answer here</answer>. The last line within <answer></answer> should be in the following format: 'Therefore, the final answer is: $\\boxed{{ANSWER}}$.'",
                 "role": "system"
             },
             {
@@ -164,6 +164,52 @@ def formatting_prompt_template(examples):
             },
             {
                 "content": f"\n<think>{cot}</think>\n<answer>{output}</answer>",
+                "role": "assistant"
+            }
+        ]
+
+        messages.append(prompt_formatted)
+    return {
+        "messages": messages
+    }
+
+
+# Format the data with prompt template - post-CoT
+def formatting_prompt_template_post_CoT(examples):
+    '''
+    # NOTE: Format the data in the following style before utilzing the chat_template
+    [
+        {
+            "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in the mind and then provide the user with the answer. The reasoning process and answer are enclosed within <answer> </answer> and <think> </think>tags, respectively, i.e., <answer> answer here </answer>\n<think> reasoning process here </think>.",
+            "role": "system"
+        },
+        {
+            "content": "[Problem]",
+            "role": "user"
+        },
+        {
+            "content": "<answer>[Deepseek Solution]</answer>\n<think>[Deepseek Reasoning]</think>",
+            "role": "assistant"
+        }
+    ]
+    '''
+
+    problems = examples["problem"]
+    cots = examples["deepseek_reasoning"]
+    outputs = examples["deepseek_solution"]
+    messages = []
+    for problem, cot, output in zip(problems, cots, outputs):
+        prompt_formatted = [
+            {
+                "content": "You are an Assistant good at math, coding, science and puzzling. When user asks a question, you firstly think about the reasoning process in mind and then provide the user with the answer. The reasoning process and answer are enclosed within <think></think> and <answer></answer> tags, respectively, i.e., <answer>answer here</answer>\n<think>reasoning process here</think>. The last line within <answer></answer> should be in the following format: 'Therefore, the final answer is: $\\boxed{{ANSWER}}$.'",
+                "role": "system"
+            },
+            {
+                "content": problem,
+                "role": "user"
+            },
+            {
+                "content": f"\n<answer>{output}</answer>\n<think>{cot}</think>",
                 "role": "assistant"
             }
         ]
@@ -234,13 +280,13 @@ if __name__ == "__main__":
 
     # 4.Format data with prompt template
     formatted_train_dataset = train_dataset.map(
-        formatting_prompt_template, 
+        formatting_prompt_template_pre_CoT, 
         batched=True).select_columns(["messages"])
     formatted_test_dataset = test_dataset.map(
-        formatting_prompt_template,
+        formatting_prompt_template_pre_CoT,
         batched=True).select_columns(["messages"])
-    formatted_train_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_train_dataset')
-    formatted_test_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_test_dataset')
+    formatted_train_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_train_dataset_pre_CoT')
+    formatted_test_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_test_dataset_pre_CoT')
     # print(formatted_train_dataset["text"][0])
 
     """
