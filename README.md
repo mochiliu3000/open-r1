@@ -12,16 +12,16 @@ watch 'nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu --f
 
 ## GRPO training
 ```
-ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/recipes/accelerate_configs/zero3.yaml src/open_r1/grpo.py --config mochi_r1/recipes/Qwen2.5-1.5B-Instruct/grpo/config_demo.yaml
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/recipes/accelerate_configs/zero3.yaml src/open_r1/grpo.py --config mochi_r1/recipes/Qwen2.5/grpo/config_demo.yaml
 ```
 
 ## SFT training
 ```
 # Train + Eval
-ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft.py --config mochi_r1/recipes/Qwen2.5-1.5B-Instruct/sft/config_demo_all.yaml
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft.py --config mochi_r1/recipes/Qwen2.5/sft/config_demo_all.yaml
 
 # Eval
-ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft.py --config mochi_r1/recipes/Qwen2.5-1.5B-Instruct/sft/config_demo_all_eval.yaml
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft.py --config mochi_r1/recipes/Qwen2.5/sft/config_demo_all_eval.yaml
 ```
 
 ## Generation
@@ -60,6 +60,9 @@ python mochi_r1/generate_vllm.py \
 
 # MODEL_NAME=Qwen2.5-7B-Instruct
 # MODEL=/home/jovyan/liumochi/model/Qwen/$MODEL_NAME
+
+# MODEL_NAME=Qwen2.5-3B-Open-R1-GRPO
+# MODEL=/home/jovyan/liumochi/open-r1/data_out/$MODEL_NAME
 
 # https://github.com/huggingface/lighteval/blob/main/src/lighteval/models/vllm/vllm_model.py
 MODEL_ARGS="pretrained=$MODEL,dtype=bfloat16,max_model_length=32768,gpu_memory_utilisation=0.9"
