@@ -126,7 +126,12 @@ class CustomQwenWithReward(Qwen2ForCausalLM):
         logits_to_keep: Union[int, torch.Tensor] = 0,
         **kwargs: Unpack[KwargsForCausalLM],
     ) -> Union[Tuple, CausalLMOutputWithPast]:
-        outputs = super().forward(**kwargs)
+        outputs = super().forward(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            labels=labels,
+            **kwargs
+        )
 
         # 生成文本（训练时需启用自回归生成）
         generated_ids = self.generate(input_ids, max_length=10000)
@@ -194,8 +199,11 @@ def main(script_args, training_args, model_args):
     # Load datasets
     ################
     #dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
-    train_dataset = load_from_disk(script_args.dataset_name)
-    test_dataset = load_from_disk(training_args.evalset_name)
+    
+    if training_args.do_train:
+        train_dataset = load_from_disk(script_args.dataset_name)
+    if training_args.do_eval:
+        test_dataset = load_from_disk(training_args.evalset_name)
 
     ################
     # Load tokenizer
