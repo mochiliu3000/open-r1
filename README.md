@@ -20,6 +20,8 @@ ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/recipes/accel
 # Train + Eval
 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft.py --config mochi_r1/recipes/Qwen2.5/sft/config_demo_all.yaml
 
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft_new.py --config mochi_r1/recipes/Qwen2.5/sft/config_demo_all_new.yaml
+
 # Eval
 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/zero3.yaml src/open_r1/sft.py --config mochi_r1/recipes/Qwen2.5/sft/config_demo_all_eval.yaml
 ```
