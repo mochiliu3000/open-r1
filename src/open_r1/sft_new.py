@@ -133,9 +133,24 @@ class CustomQwenWithReward(Qwen2ForCausalLM):
             **kwargs
         )
 
-        # 生成文本（训练时需启用自回归生成）
-        generated_ids = self.generate(input_ids, max_length=10000)
-        generated_text = self.tokenizer.decode(generated_ids[0])
+        # 适用于Post-CoT策略，我们只生成100个token，让模型先预测正确答案，不输出推理过程
+        generate_kwargs = {
+            'input_ids': input_ids,
+            'attention_mask': attention_mask,
+            'max_new_tokens': 100,  # 限制生成的新token数量
+            'use_cache': True,      # 使用缓存加速
+            'pad_token_id': self.config.pad_token_id,
+            'eos_token_id': self.config.eos_token_id,
+        }
+
+        # 在无梯度上下文中生成以避免显存累积
+        with torch.no_grad():
+            original_mode = self.training
+            self.eval()
+            generated_ids = self.generate(**generate_kwargs)
+            self.train(original_mode)
+
+        generated_text = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
         
         # 提取生成文本中的答案
         predicted_answer = self.extract_boxed_answer(generated_text)  # 自定义解析函数
@@ -144,8 +159,15 @@ class CustomQwenWithReward(Qwen2ForCausalLM):
         # 计算正确性奖励（二值或连续值）
         reward = 1.0 if predicted_answer == true_answer else -1.0
         
-        # 计算策略梯度损失
-        log_probs = torch.log_softmax(outputs.logits, dim=-1)
+ # 为生成的序列创建attention mask
+        gen_attention_mask = (generated_ids != self.config.pad_token_id).int()
+
+        # 重新前向传播以获取生成序列的logits（保留梯度）
+        outputs_rl = super().forward(
+            input_ids=generated_ids,
+            attention_mask=gen_attention_mask,
+        )
+        log_probs = torch.log_softmax(outputs_rl.logits, dim=-1)
         selected_log_probs = log_probs[:, :-1].gather(2, generated_ids[:, 1:].unsqueeze(-1)).squeeze()
         rl_loss = -torch.mean(selected_log_probs * reward)
         

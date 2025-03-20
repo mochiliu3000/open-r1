@@ -280,13 +280,13 @@ if __name__ == "__main__":
 
     # 4.Format data with prompt template
     formatted_train_dataset = train_dataset.map(
-        formatting_prompt_template_pre_CoT, 
+        formatting_prompt_template_post_CoT, 
         batched=True).select_columns(["messages"])
     formatted_test_dataset = test_dataset.map(
-        formatting_prompt_template_pre_CoT,
+        formatting_prompt_template_post_CoT,
         batched=True).select_columns(["messages"])
-    formatted_train_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_train_dataset_pre_CoT')
-    formatted_test_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_test_dataset_pre_CoT')
+    formatted_train_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_train_dataset_post_CoT')
+    formatted_test_dataset.save_to_disk(f'{processed_dir}/{sample_type}_formatted_test_dataset_post_CoT')
     # print(formatted_train_dataset["text"][0])
 
     """
