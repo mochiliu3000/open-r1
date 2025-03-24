@@ -15,7 +15,7 @@ watch 'nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu --f
 ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/recipes/accelerate_configs/zero3.yaml src/open_r1/grpo.py --config mochi_r1/recipes/Qwen2.5/grpo/config_demo.yaml
 
 # SFT + GRPO
-ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/recipes/accelerate_configs/zero3.yaml src/open_r1/grpo.py --config mochi_r1\recipes\Qwen2.5\grpo\config_demo_sft_grpo.yaml
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file mochi_r1/recipes/accelerate_configs/zero3.yaml src/open_r1/grpo.py --config mochi_r1/recipes/Qwen2.5/grpo/config_demo_sft_grpo.yaml
 ```
 
 ## SFT training
