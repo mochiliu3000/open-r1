@@ -137,8 +137,9 @@ class CustomQwenWithReward(Qwen2ForCausalLM):
         generate_kwargs = {
             'input_ids': input_ids,
             'attention_mask': attention_mask,
-            'max_new_tokens': 100,  # 限制生成的新token数量
-            'use_cache': True,      # 使用缓存加速
+            'max_new_tokens': 20,  # 限制生成的新token数量
+            'num_beams': 1,        # 使用贪婪搜索减少显存
+            'use_cache': True,     # 使用缓存加速
             'pad_token_id': self.config.pad_token_id,
             'eos_token_id': self.config.eos_token_id,
         }
